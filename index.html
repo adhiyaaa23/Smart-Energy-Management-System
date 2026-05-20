@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SEMS · Smart Energy Management System — Astra Honda Motor</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<canvas id="canvas-bg"></canvas>
+<div class="grid-overlay"></div>
+<div class="scanline-overlay"></div>
+<div class="vignette"></div>
+
+<div id="cursor-ring"></div>
+<div id="cursor-dot"></div>
+
+<div id="loader">
+  <div class="loader-logo">SEMS</div>
+  <div class="loader-sub">Smart Energy Management System</div>
+  <div class="loader-bar-wrap">
+    <div class="loader-bar-fill" id="loader-fill"></div>
+  </div>
+  <div class="loader-msg" id="loader-msg">Booting edge controller KRW-GW-04...</div>
+  <div class="loader-grid">
+    <div class="loader-node"></div>
+    <div class="loader-node"></div>
+    <div class="loader-node"></div>
+    <div class="loader-node"></div>
+    <div class="loader-node"></div>
+    <div class="loader-node"></div>
+    <div class="loader-node"></div>
+    <div class="loader-node"></div>
+  </div>
+</div>
+
+<div id="notif-panel">
+  <div class="notif-header">
+    <span>⚠ Alarm Aktif</span>
+    <span class="notif-close">✕</span>
+  </div>
+  <div class="notif-body"></div>
+</div>
+
+<div id="tooltip"></div>
+
+<div id="app">
+
+  <header id="topbar">
+    <div class="topbar-left">
+      <button id="menu-toggle" class="menu-toggle">☰</button>
+
+      <div class="logo-mark">
+        <div class="logo-hex">
+          <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <polygon points="16,2 28,9 28,23 16,30 4,23 4,9"
+              fill="none" stroke="#00FFD4" stroke-width="1.5"
+              style="filter:drop-shadow(0 0 4px #00FFD4)"/>
+            <text x="16" y="20" text-anchor="middle" font-family="'Share Tech Mono',monospace"
+              font-size="9" font-weight="700" fill="#00FFD4">⚡</text>
+          </svg>
+        </div>
+        <div class="logo-titles">
+          <div class="logo-title">SEMS</div>
+          <div class="logo-sub">Astra Honda Motor · All Plants · IIoT v2.4</div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="topbar-center">
+      <div class="status-beacon">
+        <div class="beacon-dot"></div>
+        <span class="beacon-text">LIVE · ALL PLANTS · 188/200 SENSOR</span>
+      </div>
+      <div class="tariff-chip">PLN I-4/TT · Rp 996,74/kWh</div>
+    </div>
+
+    <div class="topbar-right">
+      <div style="text-align:right;">
+        <div id="clock">--:--:--</div>
+        <div id="date-display">--</div>
+      </div>
+      <button class="alert-btn" title="Buka Panel Alarm">
+        🔔
+        <div class="alert-count" id="alarm-count">2</div>
+      </button>
+    </div>
+  </header>
+
+  <div id="mobile-overlay"></div>
+
+  <aside id="sidebar">
+    <nav>
+      <div class="nav-section">
+        <div class="nav-section-label">Monitor</div>
+        <div class="nav-item active" onclick="navClick(this, 'section-overview')">
+          <span class="nav-icon">⚡</span> Energy Overview
+          <span class="nav-badge green">LIVE</span>
+        </div>
+        <div class="nav-item" onclick="navClick(this, 'section-machine')">
+          <span class="nav-icon">🏭</span> Machine Status
+          <span class="nav-badge">2 ⚠</span>
+        </div>
+        <div class="nav-item" onclick="navClick(this, 'section-vampire')">
+          <span class="nav-icon">👁</span> Vampire Detector
+        </div>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-label">Analitik</div>
+        <div class="nav-item" onclick="navClick(this, 'section-eir')">
+          <span class="nav-icon">📊</span> EIR per Lini
+        </div>
+        <div class="nav-item" onclick="navClick(this, 'section-roi')">
+          <span class="nav-icon">💰</span> ROI Simulator
+        </div>
+      </div>
+    </nav>
+    <div class="sidebar-energy">
+      <div class="se-title">Distribusi Zona Aktif</div>
+      <div id="sidebar-energy-rows"></div>
+    </div>
+    <div class="sidebar-footer">
+      Edge node: <span id="edge-node">ALL-GW-CENTRAL</span><br>
+      Latency:   <span id="latency">—</span><br>
+      Sensor:    <span id="sensor-count">188/200</span><br>
+      Status:    <span>ONLINE</span>
+    </div>
+  </aside>
+
+  <main id="main">
+
+    <div class="kpi-grid" id="section-overview"></div>
+
+    <div class="grid-2-3" id="section-machine">
+      <div class="panel" style="position:relative;">
+        <div class="scan-line-container"><div class="scan-line"></div></div>
+        <div class="panel-header">
+          <span class="panel-title"><span class="icon">⚙</span>Monitor Mesin Real-Time</span>
+          <span class="panel-tag pt-green" id="prod-count">8 produksi</span>
+        </div>
+        <div class="machine-scroll">
+          <table class="machine-table">
+            <thead>
+              <tr>
+                <th>ID / Mesin</th><th>Zona</th><th>Daya (kW)</th>
+                <th>Beban</th><th>Status</th><th>Anomali</th>
+              </tr>
+            </thead>
+            <tbody id="machine-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="col-stack">
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title"><span class="icon">🚨</span>Alarm Aktif</span>
+            <span class="panel-tag pt-red" id="alarm-badge">2 kritis</span>
+          </div>
+          <div class="alarm-list" id="alarm-list"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title"><span class="icon">⚡</span>Power Factor</span>
+            <span class="panel-tag pt-green" id="pf-tag">Baik</span>
+          </div>
+          <div class="gauge-wrap">
+            <svg id="pf-gauge"></svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-3">
+      <div class="panel" id="section-donut">
+        <div class="panel-header">
+          <span class="panel-title"><span class="icon">🥧</span>Distribusi Energi per Zona</span>
+        </div>
+        <div class="chart-pad">
+          <div class="chart-container" style="height:180px;">
+            <canvas id="donut-chart"></canvas>
+          </div>
+          <div class="chart-legend" id="donut-legend" style="margin-top:10px;"></div>
+        </div>
+      </div>
+
+      <div class="panel" id="section-eir">
+        <div class="panel-header">
+          <span class="panel-title"><span class="icon">📏</span>EIR per Lini Produksi</span>
+          <span style="font-family:var(--font-mono);font-size:9px;color:var(--text3);">kWh/unit</span>
+        </div>
+        <div class="eir-list" id="eir-list"></div>
+      </div>
+
+      <div class="panel" id="section-roi">
+        <div class="panel-header">
+          <span class="panel-title"><span class="icon">💰</span>Simulator ROI</span>
+          <span class="panel-tag pt-info">Interaktif</span>
+        </div>
+        <div class="sim-pad">
+          <div class="sim-ctrl">
+            <label>Reduksi konsumsi <strong id="sv-reduction">15%</strong></label>
+            <input type="range" min="5" max="45" value="15" id="sl-reduction" step="1">
+          </div>
+          <div class="sim-ctrl">
+            <label>Konsumsi basis (juta kWh/bln) <strong id="sv-base">12</strong></label>
+            <input type="range" min="5" max="20" value="12" id="sl-base" step="1">
+          </div>
+          <div class="sim-results" id="sim-results"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title"><span class="icon">📈</span>Tren Konsumsi 7 Hari — Sebelum vs Sesudah SEMS</span>
+        <div class="chart-legend">
+          <div class="legend-item"><div class="legend-swatch" style="background:#4A7A6E;"></div>Sebelum</div>
+          <div class="legend-item"><div class="legend-swatch" style="background:#00FFD4;"></div>Dengan SEMS</div>
+          <div class="legend-item"><div class="legend-swatch" style="background:#FF2D55;"></div>Vampire Power</div>
+        </div>
+      </div>
+      <div class="chart-pad">
+        <div class="chart-container" style="height:200px;">
+          <canvas id="trend-chart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title"><span class="icon">🔌</span>Aliran Daya Real-Time</span>
+        <span class="panel-tag pt-green">Animasi</span>
+      </div>
+      <div class="flow-wrap">
+        <canvas id="flow-canvas" style="height:450px;"></canvas>
+      </div>
+    </div>
+
+    <div class="panel" id="section-vampire">
+      <div class="panel-header">
+        <span class="panel-title"><span class="icon">🕐</span>Heatmap Vampire Power — 24 Jam Terakhir</span>
+        <span style="font-family:var(--font-mono);font-size:9px;color:var(--text3);">Intensitas = kW terbuang/jam</span>
+      </div>
+      <div class="heatmap-wrap">
+        <div class="heatmap-hour-labels">
+          <span>00:00</span><span>03:00</span><span>06:00</span><span>09:00</span>
+          <span>12:00</span><span>15:00</span><span>18:00</span><span>21:00</span><span>24:00</span>
+        </div>
+        <div class="heatmap-cells" id="heatmap-cells"></div>
+        <div class="heatmap-legend">
+          <span>Rendah</span>
+          <div class="heatmap-gradient">
+            <div class="hg-stop" style="background:rgba(255,45,85,0.12);"></div>
+            <div class="hg-stop" style="background:rgba(255,45,85,0.3);"></div>
+            <div class="hg-stop" style="background:rgba(255,45,85,0.55);"></div>
+            <div class="hg-stop" style="background:rgba(255,45,85,0.78);"></div>
+            <div class="hg-stop" style="background:rgba(255,45,85,1);"></div>
+          </div>
+          <span>Tinggi</span>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div><script src="script.js"></script>
+</body>
+</html>
