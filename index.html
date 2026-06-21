@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SEMS · Plant 3 Cikarang — Astra Honda Motor</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.5.31/dist/jspdf.plugin.autotable.min.js"></script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<canvas id="canvas-bg"></canvas>
+
+<!-- ── TRANSITION OVERLAYS ──────────────────────────────────── -->
+<div id="transition-overlay"></div>
+<div id="glitch-flash"></div>
+<div id="boot-text"><div id="boot-text-inner">SEMS · PLANT 3 CIKARANG</div></div>
+<div class="grid-overlay"></div>
+<div class="scanline-overlay"></div>
+<div class="vignette"></div>
+
+<div id="cursor-ring"></div>
+<div id="cursor-dot"></div>
+
+<div id="loader" style="display:none;">
+  <div class="loader-logo">SEMS</div>
+  <div class="loader-sub">Smart Energy Management System</div>
+  <div class="loader-bar-wrap">
+    <div class="loader-bar-fill" id="loader-fill"></div>
+  </div>
+  <div class="loader-msg" id="loader-msg">Booting edge controller KRW-GW-04...</div>
+  <div class="loader-grid">
+    <div class="loader-node"></div>
+    <div class="loader-node"></div>
+    <div class="loader-node"></div>
+    <div class="loader-node"></div>
+    <div class="loader-node"></div>
+    <div class="loader-node"></div>
+    <div class="loader-node"></div>
+    <div class="loader-node"></div>
+  </div>
+</div>
+
+<div id="notif-panel">
+  <div class="notif-header">
+    <span>⚠ Alarm Aktif</span>
+    <span class="notif-close">✕</span>
+  </div>
+  <div class="notif-body"></div>
+</div>
+
+<div id="tooltip"></div>
+
+<!-- ═══ LOGIN SCREEN ═══════════════════════════════════════ -->
+<div id="login-screen">
+  <div class="ls-bg-grid"></div>
+  <div class="ls-particles" id="ls-particles"></div>
+
+  <div class="ls-card">
+    <!-- Logo -->
+    <div class="ls-logo">
+      <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" width="48" height="48">
+        <polygon points="24,3 43,13.5 43,34.5 24,45 5,34.5 5,13.5"
+          fill="none" stroke="#00FFD4" stroke-width="1.5"
+          style="filter:drop-shadow(0 0 8px #00FFD4)"/>
+        <text x="24" y="30" text-anchor="middle" font-family="Share Tech Mono,monospace"
+          font-size="14" font-weight="700" fill="#00FFD4">⚡</text>
+      </svg>
+      <div class="ls-logo-text">
+        <div class="ls-logo-title">SEMS</div>
+        <div class="ls-logo-sub">Smart Energy Management System</div>
+      </div>
+    </div>
+
+    <!-- Scan line dekor -->
+    <div class="ls-scan"></div>
+
+    <!-- Header -->
+    <div class="ls-header">
+      <div class="ls-title">Akses Sistem</div>
+      <div class="ls-desc">Gunakan email korporat Astra Honda Motor<br>untuk masuk ke dashboard IIoT Plant 3 Cikarang.</div>
+    </div>
+
+    <!-- Form -->
+    <div class="ls-form">
+      <div class="ls-field" id="lf-email">
+        <label class="ls-label">Email Korporat</label>
+        <div class="ls-input-wrap">
+          <span class="ls-input-icon">@</span>
+          <input type="email" id="login-email" class="ls-input" 
+            placeholder="nama@astra-honda.com" autocomplete="email"
+            oninput="AUTH.validateEmail(this.value)">
+          <span class="ls-input-suffix">AHM</span>
+        </div>
+        <div class="ls-field-msg" id="email-msg"></div>
+      </div>
+
+      <div class="ls-field" id="lf-pass">
+        <label class="ls-label">Password</label>
+        <div class="ls-input-wrap">
+          <span class="ls-input-icon">🔒</span>
+          <input type="password" id="login-pass" class="ls-input"
+            placeholder="••••••••••" autocomplete="current-password"
+            onkeydown="if(event.key==='Enter') AUTH.submitLogin()">
+          <button class="ls-eye" id="ls-eye" onclick="AUTH.togglePass()">👁</button>
+        </div>
+        <div class="ls-field-msg" id="pass-msg"></div>
+      </div>
+
+      <div class="ls-options">
+        <label class="ls-checkbox">
+          <input type="checkbox" id="login-remember">
+          <span class="ls-checkmark"></span>
+          Ingat saya
+        </label>
+        <button class="ls-link" onclick="AUTH.forgotPassword()">Lupa password?</button>
+      </div>
+
+      <button class="ls-btn" id="login-btn" onclick="AUTH.submitLogin()">
+        <span class="ls-btn-text" id="login-btn-text">MASUK KE SISTEM</span>
+        <span class="ls-btn-arrow">→</span>
+      </button>
+
+      <div class="ls-error" id="login-error"></div>
+
+      <!-- Demo Hint -->
+      <div class="ls-demo-hint">
+        <strong>Demo</strong> — Gunakan salah satu akun berikut:<br>
+        📧 <strong>budi.santoso@astra-honda.com</strong><br>
+        📧 siti.rahayu@astra-honda.com &nbsp;|&nbsp; ahmad.fauzi@astra-honda.com<br>
+        🔑 Password semua akun: <strong>Sems2026!</strong>
+      </div>
+    </div>
+
+    <!-- Footer info -->
+    <div class="ls-footer">
+      <div class="ls-footer-row">
+        <span class="ls-dot green"></span>
+        <span>Platform IIoT v2.5 · Node P3-CKR-GW-01</span>
+      </div>
+      <div class="ls-footer-row">
+        <span class="ls-dot"></span>
+        <span>PT Astra Honda Motor © 2026</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ ACCOUNT PANEL (SIDE DRAWER) ═══════════════════════ -->
+<div id="account-panel">
+  <div id="account-overlay" onclick="AUTH.toggleAccountPanel()"></div>
+  <div class="acct-drawer">
+    <!-- Header profil -->
+    <div class="acct-header">
+      <div class="acct-scan"></div>
+      <button class="acct-close" onclick="AUTH.toggleAccountPanel()">✕</button>
+      <div class="acct-avatar-lg" id="acct-avatar-lg">??</div>
+      <div class="acct-name" id="acct-name">—</div>
+      <div class="acct-email" id="acct-email">—</div>
+      <div class="acct-badge-row">
+        <span class="acct-badge" id="acct-role">—</span>
+        <span class="acct-badge acct-badge-plant" id="acct-plant">—</span>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="acct-tabs">
+      <button class="acct-tab active" id="tab-info" onclick="AUTH.switchTab('info')">Informasi</button>
+      <button class="acct-tab" id="tab-settings" onclick="AUTH.switchTab('settings')">Pengaturan</button>
+    </div>
+
+    <!-- Panel: Informasi Akun -->
+    <div class="acct-panel" id="panel-info">
+      <div class="acct-section-title">Detail Akun</div>
+      <div class="acct-kv" id="acct-details"></div>
+
+      <div class="acct-section-title" style="margin-top:18px;">Sesi Aktif</div>
+      <div class="acct-session-box">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div style="width:8px;height:8px;border-radius:50%;background:#00FFD4;box-shadow:0 0 6px #00FFD4;"></div>
+          <span style="font-family:var(--font-mono);font-size:10px;color:#A8C8BE;">Sesi ini</span>
+        </div>
+        <div style="font-family:var(--font-mono);font-size:9px;color:#243D35;margin-top:4px;" id="acct-session-info">—</div>
+      </div>
+
+      <div class="acct-section-title" style="margin-top:18px;">Aktivitas Terakhir</div>
+      <div id="acct-activity"></div>
+    </div>
+
+    <!-- Panel: Pengaturan -->
+    <div class="acct-panel" id="panel-settings" style="display:none;">
+      <div class="acct-section-title">Preferensi Dashboard</div>
+
+      <div class="acct-setting-row">
+        <div>
+          <div class="acct-set-label">Interval Refresh Alarm</div>
+          <div class="acct-set-sub">Seberapa sering engine mendeteksi alarm baru</div>
+        </div>
+        <select class="acct-select" id="set-alarm-interval" onchange="AUTH.saveSetting('alarmInterval', this.value)">
+          <option value="2000">2 detik</option>
+          <option value="4000" selected>4 detik</option>
+          <option value="8000">8 detik</option>
+          <option value="15000">15 detik</option>
+        </select>
+      </div>
+
+      <div class="acct-setting-row">
+        <div>
+          <div class="acct-set-label">Notifikasi Suara</div>
+          <div class="acct-set-sub">Beep saat alarm kritis baru muncul</div>
+        </div>
+        <label class="acct-toggle">
+          <input type="checkbox" id="set-sound" checked onchange="AUTH.saveSetting('sound', this.checked)">
+          <span class="acct-toggle-track"></span>
+        </label>
+      </div>
+
+      <div class="acct-setting-row">
+        <div>
+          <div class="acct-set-label">Animasi Partikel</div>
+          <div class="acct-set-sub">Background canvas (matikan jika CPU tinggi)</div>
+        </div>
+        <label class="acct-toggle">
+          <input type="checkbox" id="set-particles" checked onchange="AUTH.saveSetting('particles', this.checked)">
+          <span class="acct-toggle-track"></span>
+        </label>
+      </div>
+
+      <div class="acct-section-title" style="margin-top:18px;">Zona Pantau Default</div>
+      <div class="acct-zone-grid" id="acct-zone-grid">
+        <label class="acct-zone-item"><input type="checkbox" checked> Paint</label>
+        <label class="acct-zone-item"><input type="checkbox" checked> Welding</label>
+        <label class="acct-zone-item"><input type="checkbox" checked> Molding</label>
+        <label class="acct-zone-item"><input type="checkbox" checked> HVAC</label>
+        <label class="acct-zone-item"><input type="checkbox" checked> Compress</label>
+        <label class="acct-zone-item"><input type="checkbox" checked> Heat</label>
+        <label class="acct-zone-item"><input type="checkbox" checked> Stamping</label>
+        <label class="acct-zone-item"><input type="checkbox" checked> Machining</label>
+      </div>
+
+      <div class="acct-section-title" style="margin-top:18px;">Keamanan</div>
+      <div class="acct-setting-row">
+        <div>
+          <div class="acct-set-label">Auto Logout</div>
+          <div class="acct-set-sub">Logout otomatis setelah tidak aktif</div>
+        </div>
+        <select class="acct-select" id="set-auto-logout" onchange="AUTH.saveSetting('autoLogout', this.value)">
+          <option value="0">Nonaktif</option>
+          <option value="15">15 menit</option>
+          <option value="30" selected>30 menit</option>
+          <option value="60">1 jam</option>
+        </select>
+      </div>
+
+      <button class="acct-save-btn" onclick="AUTH.applySettings()">Simpan Pengaturan</button>
+    </div>
+
+    <!-- Footer aksi -->
+    <div class="acct-footer">
+      <button class="acct-action-btn acct-switch" onclick="AUTH.switchAccount()">
+        <span>⇄</span> Ganti Akun
+      </button>
+      <button class="acct-action-btn acct-logout" onclick="AUTH.logout()">
+        <span>⏻</span> Logout
+      </button>
+    </div>
+  </div>
+</div>
+
+<div id="app">
+
+  <header id="topbar">
+    <div class="topbar-left">
+      <button id="menu-toggle" class="menu-toggle">☰</button>
+      <img src="AHM.jpg" alt="AHM Logo" class="topbar-ahm-logo"
+        style="height:36px;width:auto;margin-left:10px;object-fit:contain;">
+
+      <div class="logo-mark">
+        <div class="logo-hex">
+          <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <polygon points="16,2 28,9 28,23 16,30 4,23 4,9"
+              fill="none" stroke="#00FFD4" stroke-width="1.5"
+              style="filter:drop-shadow(0 0 4px #00FFD4)"/>
+            <text x="16" y="20" text-anchor="middle" font-family="'Share Tech Mono',monospace"
+              font-size="9" font-weight="700" fill="#00FFD4">⚡</text>
+          </svg>
+        </div>
+        <div class="logo-titles">
+          <div class="logo-title">SEMS</div>
+          <div class="logo-sub">Astra Honda Motor · Plant 3 Cikarang · IIoT v2.4</div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="topbar-center">
+      <div class="status-beacon">
+        <div class="beacon-dot"></div>
+        <span class="beacon-text">LIVE · PLANT 3 CKR · 62/64 SENSOR</span>
+      </div>
+      <div class="tariff-chip">PLN I-4/TT · P3-CKR · Rp 1.444,70/kWh</div>
+    </div>
+
+    <div class="topbar-right">
+      <div style="text-align:right;">
+        <div id="clock">--:--:--</div>
+        <div id="date-display">--</div>
+      </div>
+      <button class="alert-btn" title="Buka Panel Alarm">
+        🔔
+        <div class="alert-count" id="alarm-count">2</div>
+      </button>
+      <button class="avatar-btn" id="avatar-btn" title="Akun Saya" onclick="AUTH.toggleAccountPanel()">
+        <div class="avatar-ring">
+          <div class="avatar-initials" id="avatar-initials">??</div>
+        </div>
+      </button>
+    </div>
+  </header>
+
+  <div id="mobile-overlay"></div>
+
+  <aside id="sidebar">
+    <nav>
+      <div class="nav-section">
+        <div class="nav-section-label">Monitor</div>
+        <div class="nav-item active" onclick="navClick(this, 'section-overview')">
+          <span class="nav-icon">⚡</span> Energy Overview
+          <span class="nav-badge green">LIVE</span>
+        </div>
+        <div class="nav-item" onclick="navClick(this, 'section-machine')">
+          <span class="nav-icon">🏭</span> Machine Status
+          <span class="nav-badge">2 ⚠</span>
+        </div>
+        <div class="nav-item" onclick="navClick(this, 'section-vampire')">
+          <span class="nav-icon">👁</span> Vampire Detector
+        </div>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-label">Analitik</div>
+        <div class="nav-item" onclick="navClick(this, 'section-eir')">
+          <span class="nav-icon">📊</span> EIR per Lini
+        </div>
+        <div class="nav-item" onclick="navClick(this, 'section-roi')">
+          <span class="nav-icon">💰</span> ROI Simulator
+        </div>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-label">Otomasi & SDM</div>
+        <div class="nav-item" onclick="navClick(this, 'section-rpa')">
+          <span class="nav-icon">🤖</span> RPA Automation
+          <span class="nav-badge green">NEW</span>
+        </div>
+        <div class="nav-item" onclick="navClick(this, 'section-people')">
+          <span class="nav-icon">👥</span> People Transform
+          <span class="nav-badge green">NEW</span>
+        </div>
+        <div class="nav-item" onclick="navClick(this, 'section-iiot')">
+          <span class="nav-icon">🌐</span> IIoT Architecture
+          <span class="nav-badge green">NEW</span>
+        </div>
+      </div>
+    </nav>
+    <div class="sidebar-energy">
+      <div class="se-title">Distribusi Zona Aktif</div>
+      <div id="sidebar-energy-rows"></div>
+    </div>
+    <div id="conn-status-bar" style="padding:8px 14px 4px;border-top:1px solid rgba(0,255,212,0.07);font-family:var(--font-mono,monospace);font-size:10px;color:#4A7A6E;">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
+        <span style="color:#4A7A6E;letter-spacing:.08em;">KONEKSI DATA — P3</span>
+        <span id="conn-mode-tag" style="background:rgba(0,255,212,0.08);color:#00FFD4;border:1px solid rgba(0,255,212,0.2);border-radius:3px;padding:1px 6px;font-size:9px;">DEMO</span>
+      </div>
+      <span id="conn-status-text" style="color:#243D35;">Menginisialisasi...</span>
+    </div>
+    <div class="sidebar-footer">
+      Edge node: <span id="edge-node">P3-CKR-GW-01</span><br>
+      Latency:   <span id="latency">—</span><br>
+      Sensor:    <span id="sensor-count">62/64</span><br>
+      Status:    <span>ONLINE</span>
+    </div>
+  </aside>
+
+  <main id="main">
+
+    <div class="kpi-grid" id="section-overview"></div>
+
+    <div class="grid-2-3" id="section-machine">
+      <div class="panel" style="position:relative;">
+        <div class="scan-line-container"><div class="scan-line"></div></div>
+        <div class="panel-header">
+          <span class="panel-title"><span class="icon">⚙</span>Monitor Mesin Real-Time</span>
+          <span class="panel-tag pt-green" id="prod-count">8 produksi</span>
+        </div>
+        <div class="machine-scroll">
+          <table class="machine-table">
+            <thead>
+              <tr>
+                <th>ID / Mesin</th><th>Zona</th><th>Daya (kW)</th>
+                <th>Beban</th><th>Status</th><th>Anomali</th>
+              </tr>
+            </thead>
+            <tbody id="machine-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="col-stack">
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title"><span class="icon">🚨</span><span class="alarm-live-dot" id="alarm-live-dot"></span>Alarm Aktif</span>
+            <span class="panel-tag pt-red" id="alarm-badge">2 kritis</span>
+          </div>
+          <div class="alarm-list" id="alarm-list"></div>
+          <div style="padding:6px 10px 8px;border-top:1px solid rgba(0,255,212,0.06);display:flex;align-items:center;justify-content:space-between;">
+            <span style="font-family:var(--font-mono);font-size:8px;color:#243D35;">Diperbarui setiap 4 detik</span>
+            <span style="font-family:var(--font-mono);font-size:8px;color:#243D35;" id="alarm-last-check">—</span>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title"><span class="icon">⚡</span>Power Factor</span>
+            <span class="panel-tag pt-green" id="pf-tag">Baik</span>
+          </div>
+          <div class="gauge-wrap">
+            <svg id="pf-gauge"></svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-3">
+      <div class="panel" id="section-donut">
+        <div class="panel-header">
+          <span class="panel-title"><span class="icon">🥧</span>Distribusi Energi per Zona</span>
+        </div>
+        <div class="chart-pad">
+          <div class="chart-container" style="height:180px;">
+            <canvas id="donut-chart"></canvas>
+          </div>
+          <div class="chart-legend" id="donut-legend" style="margin-top:10px;"></div>
+        </div>
+      </div>
+
+      <div class="panel" id="section-eir">
+        <div class="panel-header">
+          <span class="panel-title"><span class="icon">📏</span>EIR per Lini Produksi</span>
+          <span style="font-family:var(--font-mono);font-size:9px;color:var(--text3);">kWh/unit</span>
+        </div>
+        <div class="eir-list" id="eir-list"></div>
+      </div>
+
+      <div class="panel" id="section-roi">
+        <div class="panel-header">
+          <span class="panel-title"><span class="icon">💰</span>Simulator ROI</span>
+          <span class="panel-tag pt-info">Interaktif</span>
+        </div>
+        <div class="sim-pad">
+          <div class="sim-ctrl">
+            <label>Reduksi konsumsi <strong id="sv-reduction">15%</strong></label>
+            <input type="range" min="5" max="45" value="15" id="sl-reduction" step="1">
+          </div>
+          <div class="sim-ctrl">
+            <label>Konsumsi basis (juta kWh/bln) <strong id="sv-base">12</strong></label>
+            <input type="range" min="5" max="20" value="12" id="sl-base" step="1">
+          </div>
+          <div class="sim-results" id="sim-results"></div>
+        </div>
+      </div>
+
+      <div class="panel" id="section-roi-finance">
+        <div class="panel-header">
+          <span class="panel-title"><span class="icon">💰</span>Financial Impact &amp; ROI Calculator</span>
+          <span style="font-family:var(--font-mono);font-size:9px;color:var(--text3);">Tarif Industri I-4 / PLN</span>
+        </div>
+        <div class="roi-grid">
+          <div class="roi-card card-loss">
+            <div class="roi-label">ESTIMASI KERUGIAN VAMPIRE POWER (BULANAN)</div>
+            <div class="roi-value" id="roi-vampire-loss">Rp 0</div>
+            <div class="roi-subtext">Akibat mesin idle di luar jam shift produksi</div>
+          </div>
+
+          <div class="roi-card" id="pf-penalty-card">
+            <div class="roi-label">POTENSI DENDA kVARh (PLN PENALTY)</div>
+            <div class="roi-value" id="roi-pf-penalty">Rp 0</div>
+            <div class="roi-subtext" id="roi-pf-status">Power Factor Aman (&gt; 0.85)</div>
+          </div>
+
+          <div class="roi-card card-savings">
+            <div class="roi-label">PROYEKSI HEMAT OPERASIONAL (ROI)</div>
+            <div class="roi-value" id="roi-total-savings">Rp 0</div>
+            <div class="roi-subtext">Akibat optimalisasi otomatis via SEMS</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" id="section-esg">
+        <div class="panel-header">
+          <span class="panel-title"><span class="icon">📋</span>Comprehensive Report & Metrics</span>
+          <button class="panel-action-btn" onclick="generateESGReport()" title="Generate Professional PDF Report">📥 Generate Report</button>
+        </div>
+        <div class="esg-grid">
+          <div class="esg-card esg-environmental">
+            <div class="esg-icon">♻</div>
+            <div class="esg-title">ENVIRONMENTAL</div>
+            <div class="esg-content">
+              <div class="esg-metric">
+                <span class="esg-label">CO₂ Terhemat</span>
+                <span class="esg-value" id="esg-co2-saved">0</span>
+                <span class="esg-unit">ton/bulan</span>
+              </div>
+              <div class="esg-metric">
+                <span class="esg-label">Energi Terhemat</span>
+                <span class="esg-value" id="esg-energy-saved">0</span>
+                <span class="esg-unit">MWh/bulan</span>
+              </div>
+              <div class="esg-bar">
+                <div class="esg-bar-fill" id="esg-env-progress" style="width:60%;"></div>
+              </div>
+              <span class="esg-target">Target 2026: Net Zero Emisi</span>
+            </div>
+          </div>
+
+          <div class="esg-card esg-social">
+            <div class="esg-icon">👥</div>
+            <div class="esg-title">SOCIAL</div>
+            <div class="esg-content">
+              <div class="esg-metric">
+                <span class="esg-label">Keselamatan Kerja</span>
+                <span class="esg-value" id="esg-safety">0</span>
+                <span class="esg-unit">hari tanpa insiden</span>
+              </div>
+              <div class="esg-metric">
+                <span class="esg-label">Efisiensi Operator</span>
+                <span class="esg-value" id="esg-efficiency">92</span>
+                <span class="esg-unit">% produktivitas</span>
+              </div>
+              <div class="esg-bar">
+                <div class="esg-bar-fill" id="esg-social-progress" style="width:92%;"></div>
+              </div>
+              <span class="esg-target">Pelatihan: 240 jam/tahun</span>
+            </div>
+          </div>
+
+          <div class="esg-card esg-governance">
+            <div class="esg-icon">⚖</div>
+            <div class="esg-title">GOVERNANCE</div>
+            <div class="esg-content">
+              <div class="esg-metric">
+                <span class="esg-label">Kepatuhan Regulasi</span>
+                <span class="esg-value" id="esg-compliance">100</span>
+                <span class="esg-unit">% PLN standar</span>
+              </div>
+              <div class="esg-metric">
+                <span class="esg-label">Audit Trail</span>
+                <span class="esg-value" id="esg-audit">24/7</span>
+                <span class="esg-unit">monitoring real-time</span>
+              </div>
+              <div class="esg-bar">
+                <div class="esg-bar-fill" id="esg-gov-progress" style="width:100%;"></div>
+              </div>
+              <span class="esg-target">ISO 14001 | ISO 45001</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title"><span class="icon">📈</span>Tren Konsumsi 7 Hari — Sebelum vs Sesudah SEMS</span>
+        <div class="chart-legend">
+          <div class="legend-item"><div class="legend-swatch" style="background:#4A7A6E;"></div>Sebelum</div>
+          <div class="legend-item"><div class="legend-swatch" style="background:#00FFD4;"></div>Dengan SEMS</div>
+          <div class="legend-item"><div class="legend-swatch" style="background:#FF2D55;"></div>Vampire Power</div>
+        </div>
+      </div>
+      <div class="chart-pad">
+        <div class="chart-container" style="height:200px;">
+          <canvas id="trend-chart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title"><span class="icon">🔌</span>Aliran Daya Real-Time</span>
+        <span class="panel-tag pt-green">Animasi</span>
+      </div>
+      <div class="flow-wrap">
+        <canvas id="flow-canvas" style="height:450px;"></canvas>
+      </div>
+    </div>
+
+    <div class="panel" id="section-vampire">
+      <div class="panel-header">
+        <span class="panel-title"><span class="icon">🕐</span>Heatmap Vampire Power — 24 Jam Terakhir</span>
+        <span style="font-family:var(--font-mono);font-size:9px;color:var(--text3);">Intensitas = kW terbuang/jam</span>
+      </div>
+      <div class="heatmap-wrap">
+        <div class="heatmap-hour-labels">
+          <span>00:00</span><span>03:00</span><span>06:00</span><span>09:00</span>
+          <span>12:00</span><span>15:00</span><span>18:00</span><span>21:00</span><span>24:00</span>
+        </div>
+        <div class="heatmap-cells" id="heatmap-cells"></div>
+        <div class="heatmap-legend">
+          <span>Rendah</span>
+          <div class="heatmap-gradient">
+            <div class="hg-stop" style="background:rgba(255,45,85,0.12);"></div>
+            <div class="hg-stop" style="background:rgba(255,45,85,0.3);"></div>
+            <div class="hg-stop" style="background:rgba(255,45,85,0.55);"></div>
+            <div class="hg-stop" style="background:rgba(255,45,85,0.78);"></div>
+            <div class="hg-stop" style="background:rgba(255,45,85,1);"></div>
+          </div>
+          <span>Tinggi</span>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ═══ RPA AUTOMATION PANEL ══════════════════════════════ -->
+    <div class="panel" id="section-rpa">
+      <div class="panel-header">
+        <span class="panel-title"><span class="icon">🤖</span>RPA Automation Engine</span>
+        <span class="panel-tag pt-green" id="rpa-status-tag">AKTIF</span>
+      </div>
+      <div class="rpa-intro">
+        Sistem otomasi respons real-time yang mengeksekusi tindakan koreksi secara otomatis
+        berdasarkan kondisi sensor — tanpa intervensi manual operator.
+      </div>
+
+      <!-- Rule Cards -->
+      <div class="rpa-rules-grid" id="rpa-rules-grid"></div>
+
+      <!-- Execution Log -->
+      <div class="rpa-log-header">
+        <span>📋 Execution Log — Tindakan Otomatis</span>
+        <span class="rpa-log-count" id="rpa-log-count">0 eksekusi</span>
+      </div>
+      <div class="rpa-log" id="rpa-log"></div>
+
+      <!-- Manual Override -->
+      <div class="rpa-override">
+        <div class="rpa-override-title">⚙ Manual Override</div>
+        <div class="rpa-override-btns">
+          <button class="rpa-btn rpa-btn-exec" onclick="RPA.manualTrigger('capacitor')">⚡ Aktifkan Capacitor Bank</button>
+          <button class="rpa-btn rpa-btn-exec" onclick="RPA.manualTrigger('shutdown')">🔌 Shutdown Mesin Idle</button>
+          <button class="rpa-btn rpa-btn-exec" onclick="RPA.manualTrigger('hvac')">❄ Optimalkan HVAC</button>
+          <button class="rpa-btn rpa-btn-warn" onclick="RPA.toggleAutomation()">⏸ Pause Otomasi</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ PEOPLE TRANSFORMATION PANEL ══════════════════════ -->
+    <div class="panel" id="section-people">
+      <div class="panel-header">
+        <span class="panel-title"><span class="icon">👥</span>People Transformation</span>
+        <span class="panel-tag pt-info">SDM Digital</span>
+      </div>
+      <div class="people-intro">
+        SEMS mengubah cara kerja operator dari pemantauan manual ke pengambilan keputusan
+        berbasis data real-time — meningkatkan kompetensi digital SDM AHM Plant 3.
+      </div>
+
+      <!-- Transformation Metrics -->
+      <div class="people-kpi-grid" id="people-kpi-grid"></div>
+
+      <!-- Operator Skills -->
+      <div class="people-section-title">📊 Skill Matrix Operator — Level Kompetensi Digital</div>
+      <div class="people-skill-table" id="people-skill-table"></div>
+
+      <!-- Training Timeline -->
+      <div class="people-section-title">🗓 Roadmap Transformasi — Fase Implementasi</div>
+      <div class="people-timeline" id="people-timeline"></div>
+
+      <!-- Certification Tracker -->
+      <div class="people-section-title">🏅 Tracker Sertifikasi & Pencapaian</div>
+      <div class="people-cert-grid" id="people-cert-grid"></div>
+    </div>
+
+    <!-- ═══ IIoT ARCHITECTURE PANEL ═══════════════════════════ -->
+    <div class="panel" id="section-iiot">
+      <div class="panel-header">
+        <span class="panel-title"><span class="icon">🌐</span>IIoT Architecture — SEMS Plant 3</span>
+        <span class="panel-tag pt-green">Live Blueprint</span>
+      </div>
+      <div class="iiot-intro">
+        Arsitektur 4-layer IIoT yang menghubungkan sensor mesin tingkat bawah
+        hingga dashboard cloud — real-time, aman, dan skalabel ke seluruh Plant AHM.
+      </div>
+      <canvas id="iiot-canvas" style="width:100%;height:520px;display:block;"></canvas>
+      <div class="iiot-legend">
+        <div class="iiot-leg-item"><div class="iiot-leg-dot" style="background:#FFB800;"></div>Layer 1: Field Devices</div>
+        <div class="iiot-leg-item"><div class="iiot-leg-dot" style="background:#00FFD4;"></div>Layer 2: Edge Computing</div>
+        <div class="iiot-leg-item"><div class="iiot-leg-dot" style="background:#0A84FF;"></div>Layer 3: MQTT Broker</div>
+        <div class="iiot-leg-item"><div class="iiot-leg-dot" style="background:#D4537E;"></div>Layer 4: Cloud & Dashboard</div>
+      </div>
+      <div class="iiot-protocol-chips">
+        <span class="iiot-chip">Modbus TCP/RTU</span>
+        <span class="iiot-chip">MQTT v5.0</span>
+        <span class="iiot-chip">WebSocket</span>
+        <span class="iiot-chip">REST API</span>
+        <span class="iiot-chip">OPC-UA</span>
+        <span class="iiot-chip">TLS 1.3</span>
+        <span class="iiot-chip">RBAC Auth</span>
+      </div>
+    </div>
+
+  </main>
+</div><script src="auth.js"></script>
+<script src="api-config.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
