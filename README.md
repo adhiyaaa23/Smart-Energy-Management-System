@@ -230,10 +230,4 @@ Berdasarkan panel **People Transformation** dalam dashboard, berikut roadmap imp
 
 ---
 
-## 📄 Lisensi
-
-Proyek ini belum menyertakan lisensi resmi. Tambahkan file `LICENSE` (mis. MIT) jika ingin mengizinkan penggunaan ulang kode secara terbuka.
-
----
-
 <p align="center">Dibangun dengan ⚡ untuk visi pabrik manufaktur yang lebih efisien dan berkelanjutan.</p>
