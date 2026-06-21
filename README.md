@@ -1,96 +1,120 @@
 # ⚡ SEMS — Smart Energy Management System
-### Plant 3 Cikarang · Industrial IIoT Dashboard
+### Plant 3 Cikarang · PT Astra Honda Motor (AHM)
 
-> Dashboard monitoring & otomasi energi industri berbasis web, dirancang dengan tema HUD/cyberpunk industrial — menampilkan konsumsi energi real-time, status mesin, deteksi *vampire power*, simulasi ROI, laporan ESG, automasi RPA, hingga visualisasi arsitektur IIoT 4-layer.
+**Submisi Astranauts 2026 — Product Track**
+*Tema: "ACCELERATE 2026: From Pilot to Business Transformation, Boosting Efficiency and Unlocking New Value"*
+*Business Challenge: PT Astra Honda Motor (AHM)*
 
-Proyek ini adalah **prototipe / konsep dashboard** (data simulasi) untuk studi kasus efisiensi energi pabrik manufaktur otomotif, menggunakan nama & konteks fiktif/ilustratif "Plant 3 Cikarang — Astra Honda Motor" sebagai contoh kasus penggunaan industri. Tidak berafiliasi dengan atau merepresentasikan sistem resmi PT Astra Honda Motor.
+> Dashboard monitoring & otomasi energi industri berbasis IIoT yang membantu AHM Plant 3 Cikarang mendeteksi pemborosan energi (*vampire power*), menjaga Power Factor, dan mengubah data sensor mesin menjadi keputusan operasional serta dampak finansial yang terukur — real-time, dalam satu layar.
 
 ---
 
 ## 📋 Daftar Isi
 
-- [Ringkasan](#-ringkasan)
-- [Fitur Utama](#-fitur-utama)
+- [Ringkasan Proyek](#-ringkasan-proyek)
+- [Problem Statement](#-problem-statement)
+- [Solusi: SEMS](#-solusi-sems)
+- [Keselarasan dengan Tema Astranauts 2026](#-keselarasan-dengan-tema-astranauts-2026)
+- [Dampak Bisnis & Nilai yang Diberikan](#-dampak-bisnis--nilai-yang-diberikan)
+- [Fitur Produk (MVP)](#-fitur-produk-mvp)
+- [Status Kesiapan MVP](#-status-kesiapan-mvp)
 - [Tech Stack](#-tech-stack)
 - [Struktur Proyek](#-struktur-proyek)
-- [Cara Menjalankan](#-cara-menjalankan)
+- [Cara Menjalankan Demo](#-cara-menjalankan-demo)
 - [Akun Demo](#-akun-demo)
-- [Menghubungkan ke Data Real](#-menghubungkan-ke-data-real)
-- [Kustomisasi](#-kustomisasi)
-- [Roadmap](#-roadmap)
+- [Roadmap Implementasi — Pilot ke Business Transformation](#-roadmap-implementasi--pilot-ke-business-transformation)
+- [Arsitektur Integrasi Data Real](#-arsitektur-integrasi-data-real)
+- [Tim](#-tim)
 - [Disclaimer](#-disclaimer)
 - [Lisensi](#-lisensi)
 
 ---
 
-## 🧭 Ringkasan
+## 🧭 Ringkasan Proyek
 
-SEMS adalah single-page dashboard (HTML/CSS/JS murni, tanpa build step) yang mensimulasikan sebuah sistem **Industrial IoT (IIoT)** untuk manajemen energi pabrik. Dashboard ini dibangun untuk menunjukkan bagaimana data sensor mesin, meter listrik, dan sistem SCADA/PLC dapat diagregasi menjadi satu panel kontrol yang informatif — lengkap dengan login berbasis email korporat, panel akun, notifikasi alarm real-time, dan kalkulator dampak finansial.
+**SEMS (Smart Energy Management System)** adalah dashboard IIoT yang dikembangkan untuk menjawab *business challenge* dari **PT Astra Honda Motor (AHM)** pada ajang **Astranauts 2026 — Product Track**. SEMS mengonsolidasikan data konsumsi energi, status mesin produksi, dan kondisi kelistrikan pabrik (Power Factor, tarif PLN industri) ke dalam satu dashboard operasional — lengkap dengan mesin otomasi (RPA) yang dapat bertindak otomatis atas kondisi sensor tanpa menunggu intervensi manual operator.
 
-Semua data secara default berjalan dalam **mode demo** (disimulasikan di browser), namun arsitektur kode sudah disiapkan untuk terhubung ke REST API, WebSocket, MQTT, maupun Modbus TCP gateway sungguhan tanpa perlu mengubah tampilan.
+Studi kasus pada submisi ini menggunakan **Plant 3 Cikarang** sebagai lokasi pilot.
 
 ---
 
-## ✨ Fitur Utama
+## ❗ Problem Statement
 
-### 🔐 Autentikasi & Manajemen Akun
-- Login dengan validasi domain email korporat (`@astra-honda.com`)
-- Multi-akun demo dengan role & hak akses berbeda (Energy Manager, Plant Supervisor, IIoT Engineer)
-- Panel akun (side drawer): info profil, sesi aktif, log aktivitas, dan pengaturan
-- Pengaturan personal: interval refresh alarm, notifikasi suara, animasi partikel, zona pantau default, auto-logout
-- Ganti akun & logout
+Pabrik manufaktur skala besar seperti Plant 3 Cikarang menghadapi tiga tantangan energi yang berulang namun sulit dipantau secara manual:
 
-### ⚡ Energy Overview (KPI Real-Time)
-- Total konsumsi daya (kW), vampire power, EIR rata-rata, dan Power Factor
-- Status koneksi data (DEMO / REST / WebSocket / MQTT / Modbus), latency, dan jumlah sensor aktif
+1. **Vampire power** — mesin yang tetap menyala/standby di luar jam produksi tetap menarik daya signifikan, namun jarang terdeteksi karena tidak ada visibilitas real-time per mesin.
+2. **Power Factor (PF) yang tidak terjaga** — PF di bawah ambang batas PLN (umumnya 0.85) berisiko menimbulkan **denda kVARh** pada tagihan listrik industri, namun koreksinya sering terlambat karena baru diketahui setelah tagihan terbit.
+3. **Minimnya data untuk pengambilan keputusan & pelaporan keberlanjutan** — tim energi dan manajemen kesulitan menghubungkan data sensor mentah dengan dampak finansial (Rp) dan metrik ESG yang dibutuhkan untuk pelaporan korporat maupun keputusan investasi efisiensi energi.
 
-### 🏭 Monitor Mesin Real-Time
-- Tabel status 10 mesin produksi (Die Casting, CNC Machining, Robotic Welding, Assembly, Compressor, HVAC, Heat Treatment) lengkap dengan zona, daya (kW), beban, status (produksi/idle/vampire), dan flag anomali
-- Highlight visual untuk mesin yang mengalami *vampire power* (menyala namun tidak produktif)
+Akibatnya, potensi penghematan biaya energi tidak tergali maksimal, dan transisi dari *monitoring manual* ke *automation-driven efficiency* berjalan lambat.
 
-### 🚨 Alarm & Notifikasi
-- Panel alarm aktif dengan tingkat keparahan (kritis/menengah)
-- Beep & badge notifikasi real-time, panel alarm pop-up
+---
 
-### 👁 Vampire Power Detector
-- **Heatmap 24 jam** intensitas energi terbuang per jam, untuk mengidentifikasi pola pemborosan di luar jam produksi
+## 💡 Solusi: SEMS
 
-### 📊 Analitik Energi
-- **Distribusi Energi per Zona** (donut chart)
-- **Tren Konsumsi 7 Hari**: sebelum vs sesudah implementasi SEMS vs vampire power
-- **EIR (Energy Intensity Ratio) per Lini Produksi** (kWh/unit)
-- **Power Factor Gauge** dengan status kepatuhan PLN
+SEMS menjawab ketiga masalah di atas melalui satu platform terintegrasi:
 
-### 💰 Simulator ROI & Dampak Finansial
-- Slider interaktif untuk simulasi reduksi konsumsi & basis konsumsi bulanan
-- Kalkulator estimasi kerugian vampire power, potensi denda kVARh (penalti Power Factor PLN), dan proyeksi penghematan operasional — berbasis tarif industri PLN I-4/TT
+| Masalah | Modul SEMS yang Menjawab |
+|---|---|
+| Vampire power tidak terdeteksi | **Vampire Power Detector** — heatmap 24 jam + flag anomali per mesin |
+| Koreksi PF terlambat | **RPA Automation Engine** — auto capacitor bank saat PF < 0.85, eksekusi otomatis tanpa menunggu operator |
+| Data sensor ≠ keputusan bisnis | **Financial Impact & ROI Calculator** + **Comprehensive ESG Report** — mengonversi data kW menjadi Rupiah, CO₂, dan metrik kepatuhan secara otomatis |
+| Adopsi SDM yang lambat | **People Transformation Panel** — roadmap pelatihan & sertifikasi operator agar adopsi sistem berkelanjutan, bukan hanya proyek IT |
 
-### 📋 Comprehensive ESG Report
-- Kartu metrik **Environmental** (CO₂ terhemat, energi terhemat), **Social** (hari tanpa insiden, efisiensi operator), **Governance** (kepatuhan regulasi, audit trail)
-- Tombol **Generate Report** untuk mengekspor laporan profesional ke **PDF** (via jsPDF + AutoTable)
+---
 
-### 🤖 RPA Automation Engine
-- 4 rule otomasi berbasis kondisi sensor real-time:
-  - **Auto Capacitor Bank** — koreksi otomatis saat Power Factor < 0.85
-  - **Auto Shutdown Idle** — mematikan mesin idle berdaya tinggi via simulasi Modbus TCP
-  - **HVAC Load Optimizer** — penyesuaian setpoint HVAC otomatis
-  - **Vampire Power Suppressor** — pembatasan daya otomatis saat vampire power melebihi ambang batas
-- Execution log real-time & tombol manual override per rule
+## 🚀 Keselarasan dengan Tema Astranauts 2026
 
-### 👥 People Transformation
-- KPI transformasi SDM digital (operator terlatih, jam pelatihan, skor digital skill, sertifikasi, hari tanpa insiden, efisiensi)
-- Skill matrix kompetensi digital operator
-- Roadmap/timeline implementasi 5 fase (Foundation → Integration → Automation → Optimization → Scale-Up)
-- Tracker sertifikasi & pencapaian
+Tema tahun ini, **"ACCELERATE 2026: From Pilot to Business Transformation, Boosting Efficiency and Unlocking New Value"**, secara langsung tercermin dalam desain SEMS:
 
-### 🌐 IIoT Architecture Blueprint
-- Visualisasi interaktif arsitektur 4-layer: **Field Devices → Edge Computing → MQTT Broker → Cloud & Dashboard**
-- Chip protokol yang digunakan: Modbus TCP/RTU, MQTT v5.0, WebSocket, REST API, OPC-UA, TLS 1.3, RBAC Auth
+- **From Pilot...** → SEMS dibangun sebagai MVP yang siap di-*pilot*-kan di satu lini/zona Plant 3 Cikarang terlebih dahulu, dengan arsitektur data adapter yang sudah disiapkan untuk integrasi bertahap (lihat [Arsitektur Integrasi Data Real](#-arsitektur-integrasi-data-real)).
+- **...to Business Transformation** → Modul **RPA Automation Engine** mengubah cara kerja dari pemantauan pasif menjadi tindakan korektif otomatis, dan modul **People Transformation** memastikan transformasi ini melekat pada SDM, bukan hanya pada perangkat lunak.
+- **Boosting Efficiency** → Simulator ROI dan Vampire Power Detector secara langsung menyasar efisiensi biaya energi operasional.
+- **Unlocking New Value** → Laporan ESG otomatis (Environmental, Social, Governance) membuka nilai tambah berupa kesiapan pelaporan keberlanjutan dan kepatuhan (ISO 14001, ISO 45001, ISO 50001) yang dapat dimanfaatkan AHM untuk pelaporan korporat maupun citra keberlanjutan ke publik/investor.
 
-### 🎨 Pengalaman Visual
-- Tema HUD industrial gelap (dark cyberpunk) dengan efek scanline, grid overlay, vignette, glitch transition, dan kursor kustom
-- Animasi partikel & transisi halus (GSAP)
-- Sepenuhnya responsif (sidebar collapsible untuk mobile)
+---
+
+## 📈 Dampak Bisnis & Nilai yang Diberikan
+
+Berdasarkan kalkulasi yang sudah terpasang pada modul Financial Impact (menggunakan tarif PLN Industri I-4/TT — Rp 1.444,70/kWh sebagai basis simulasi):
+
+- **Estimasi kerugian vampire power bulanan** dihitung otomatis dari mesin idle berdaya tinggi di luar jam shift produksi.
+- **Potensi denda kVARh** diproyeksikan otomatis ketika Power Factor turun di bawah ambang aman, memberi peringatan dini sebelum tagihan terbit.
+- **Proyeksi penghematan operasional (ROI)** dapat disimulasikan secara interaktif (slider reduksi konsumsi & basis konsumsi), membantu tim energi AHM membangun *business case* investasi efisiensi tanpa perlu spreadsheet manual.
+- **Kesiapan adopsi SDM** dipetakan melalui skill matrix & roadmap pelatihan, sehingga implementasi tidak berhenti di tahap teknologi.
+
+> Catatan kejujuran data: pada tahap submisi ini seluruh angka berjalan dalam **mode simulasi/demo** sebagai pembuktian konsep dan validitas formula perhitungan. Traksi yang ditawarkan pada tahap Product Track adalah **kesiapan integrasi teknis** (lihat bagian Status Kesiapan MVP) — bukan klaim data produksi aktual dari sistem AHM.
+
+---
+
+## ⭐ Fitur Produk (MVP)
+
+- **Autentikasi & Manajemen Akun** — login email korporat, role-based access (Energy Manager, Plant Supervisor, IIoT Engineer), panel pengaturan personal
+- **Energy Overview** — KPI real-time: total daya, vampire power, EIR, Power Factor
+- **Monitor Mesin Real-Time** — status 10 mesin produksi (Die Casting, CNC Machining, Welding, Assembly, Compressor, HVAC, Heat Treatment) lengkap zona, beban, dan flag anomali
+- **Alarm & Notifikasi** — panel alarm aktif dengan tingkat keparahan dan riwayat pengecekan
+- **Vampire Power Detector** — heatmap intensitas pemborosan energi 24 jam
+- **Analitik Energi** — distribusi energi per zona, tren 7 hari (sebelum vs sesudah SEMS vs vampire power), EIR per lini produksi, gauge Power Factor
+- **Simulator ROI** — slider interaktif reduksi konsumsi & basis konsumsi bulanan
+- **Financial Impact & ROI Calculator** — estimasi kerugian vampire power, potensi denda kVARh, proyeksi penghematan
+- **Comprehensive ESG Report** — kartu Environmental / Social / Governance + ekspor laporan ke **PDF** (jsPDF + AutoTable)
+- **RPA Automation Engine** — 4 rule otomasi aktif (Auto Capacitor Bank, Auto Shutdown Idle, HVAC Load Optimizer, Vampire Power Suppressor) lengkap execution log & manual override
+- **People Transformation** — KPI transformasi SDM, skill matrix, roadmap 5 fase, tracker sertifikasi
+- **IIoT Architecture Blueprint** — visualisasi arsitektur 4-layer (Field Devices → Edge Computing → MQTT Broker → Cloud & Dashboard) dengan chip protokol (Modbus TCP/RTU, MQTT v5.0, WebSocket, REST API, OPC-UA, TLS 1.3, RBAC Auth)
+
+---
+
+## ✅ Status Kesiapan MVP
+
+| Aspek | Status |
+|---|---|
+| UI/UX dashboard lengkap & responsif | ✅ Selesai |
+| Logika perhitungan finansial (ROI, denda kVARh, vampire power loss) | ✅ Selesai & dapat dikonfigurasi sesuai tarif riil |
+| Mesin otomasi (RPA) dengan kondisi & eksekusi nyata di sisi UI | ✅ Selesai (simulasi kondisi sensor) |
+| Ekspor laporan PDF (ESG) | ✅ Selesai |
+| Adapter integrasi data real (REST / WebSocket / MQTT / Modbus) | ✅ Kerangka kode siap, **menunggu kredensial/endpoint riil dari sisi pabrik** |
+| Integrasi sensor & PLC fisik di lapangan | ⏳ Tahap pilot lanjutan (membutuhkan kerja sama infrastruktur dengan AHM) |
+| Autentikasi backend production-grade (SSO/OAuth2) | ⏳ Roadmap pasca-pilot |
 
 ---
 
@@ -98,14 +122,12 @@ Semua data secara default berjalan dalam **mode demo** (disimulasikan di browser
 
 | Layer | Teknologi |
 |---|---|
-| Markup & Style | HTML5, CSS3 (custom properties / CSS variables) — tanpa framework CSS |
-| Logic | Vanilla JavaScript (ES6+, tanpa framework) |
+| Markup & Style | HTML5, CSS3 (custom properties) — tanpa framework CSS |
+| Logic | Vanilla JavaScript (ES6+) — ringan, tanpa build step, mudah di-deploy di infrastruktur internal mana pun |
 | Charts | [Chart.js](https://www.chartjs.org/) v4.4.1 |
 | Animasi | [GSAP](https://gsap.com/) v3.12.5 |
 | Export PDF | [jsPDF](https://github.com/parallax/jsPDF) v2.5.1 + [jsPDF-AutoTable](https://github.com/simonbengtsson/jsPDF-AutoTable) v3.5.31 |
-| Data Layer | Adapter kustom mendukung REST, WebSocket, MQTT-over-WS, dan Modbus TCP gateway |
-
-Tidak ada proses build/bundler — proyek murni file statis yang bisa langsung dibuka di browser atau di-deploy ke static hosting apa pun.
+| Data Layer | Adapter kustom: REST API, WebSocket, MQTT-over-WS, Modbus TCP gateway |
 
 ---
 
@@ -123,39 +145,33 @@ sems-cikarang/
 
 ---
 
-## 🚀 Cara Menjalankan
+## ▶️ Cara Menjalankan Demo
 
-Karena tidak ada proses build, cukup jalankan sebagai file statis.
+Tidak ada proses build — cukup jalankan sebagai file statis.
 
 **Opsi 1 — Buka langsung:**
 ```bash
 git clone https://github.com/<username>/<repo-name>.git
 cd <repo-name>
-open index.html      # macOS
-# atau klik dua kali index.html di file explorer
+open index.html
 ```
 
-**Opsi 2 — Local server (disarankan, agar tidak ada isu CORS pada beberapa browser):**
+**Opsi 2 — Local server (disarankan):**
 ```bash
-# Dengan Python
 python3 -m http.server 8080
-
-# Dengan Node.js (http-server)
+# atau
 npx http-server -p 8080
 ```
-Lalu buka `http://localhost:8080` di browser.
+Buka `http://localhost:8080` di browser.
 
-**Opsi 3 — GitHub Pages:**
-1. Push repo ini ke GitHub
-2. Buka **Settings → Pages**
-3. Pilih branch `main` dan folder root (`/`)
-4. Dashboard akan tersedia di `https://<username>.github.io/<repo-name>/`
+**Opsi 3 — GitHub Pages (untuk juri/reviewer Astranauts):**
+1. Push repo ke GitHub
+2. **Settings → Pages** → pilih branch `main`, folder root (`/`)
+3. Demo tersedia di `https://<username>.github.io/<repo-name>/`
 
 ---
 
 ## 🔑 Akun Demo
-
-Gunakan salah satu akun berikut pada layar login:
 
 | Email | Role | Akses |
 |---|---|---|
@@ -165,13 +181,27 @@ Gunakan salah satu akun berikut pada layar login:
 
 **Password untuk semua akun:** `Sems2026!`
 
-> ⚠️ Validasi akun dilakukan sepenuhnya di sisi klien (browser) untuk keperluan demo. Pada implementasi produksi, autentikasi **wajib** dipindahkan ke backend yang aman (mis. OAuth2/SSO korporat, hashing password, rate limiting, dll).
+> Validasi akun dilakukan di sisi klien khusus untuk keperluan demo Product Track. Pada tahap implementasi pasca-pilot, autentikasi akan dipindahkan ke backend production-grade (SSO korporat AHM, hashing password, rate limiting).
 
 ---
 
-## 🔌 Menghubungkan ke Data Real
+## 🗺 Roadmap Implementasi — Pilot ke Business Transformation
 
-Seluruh konfigurasi sumber data terpusat di **`api-config.js`**. Ubah `MODE` sesuai infrastruktur yang tersedia:
+| Fase | Periode | Fokus | Status |
+|---|---|---|---|
+| 1 — Foundation | Jan–Feb 2026 | Instalasi dashboard, orientasi & pelatihan IIoT dasar | Selesai (simulasi) |
+| 2 — Integration | Mar–Apr 2026 | Integrasi sensor Modbus TCP ke mesin utama | Selesai (simulasi) |
+| 3 — Automation | Mei–Jun 2026 | Aktivasi RPA Engine, sertifikasi ISO 50001 | **Berjalan** |
+| 4 — Optimization | Jul–Sep 2026 | Ekspansi zona, optimasi prediktif berbasis ML | Direncanakan |
+| 5 — Scale-Up | Okt–Des 2026 | Replikasi ke Plant 1 & Plant 2, target zero-incident | Direncanakan |
+
+Roadmap ini menggambarkan jalur adopsi yang diusulkan SEMS apabila lolos sebagai solusi pilot di lingkungan AHM, selaras dengan filosofi *"from pilot to business transformation"* dari tema Astranauts 2026.
+
+---
+
+## 🔌 Arsitektur Integrasi Data Real
+
+Seluruh konfigurasi sumber data terpusat di **`api-config.js`**, didesain agar tim IT/OT AHM dapat menyambungkan data sensor riil tanpa mengubah tampilan dashboard:
 
 ```js
 const SEMS_CONFIG = {
@@ -182,52 +212,44 @@ const SEMS_CONFIG = {
 
 | Mode | Kegunaan |
 |---|---|
-| `demo` | Data simulasi internal — default, tanpa server |
-| `rest` | Polling HTTP berkala ke REST API / endpoint SCADA |
+| `demo` | Data simulasi internal — default untuk presentasi/demo juri |
+| `rest` | Polling HTTP berkala ke REST API / endpoint SCADA pabrik |
 | `websocket` | Streaming data real-time via WebSocket |
 | `mqtt` | MQTT over WebSocket (broker MQTT pabrik) |
 | `modbus` | Modbus TCP via HTTP gateway (mis. Node-RED + `node-red-contrib-modbus`) |
 
-Setiap mode memiliki bagian konfigurasi sendiri (`REST`, `WS`, `MQTT`, `MODBUS`) lengkap dengan endpoint, kredensial, dan interval polling. Bagian `MAPPING` menyediakan fungsi-fungsi (`mapFacility`, `mapMachines`, `mapAlarms`, `mapTrend`, `mapDonut`, `mapHeatmap`, `mapEIR`) yang dapat disesuaikan jika struktur JSON dari API/PLC Anda berbeda dari format internal SEMS — tanpa perlu menyentuh `script.js`.
-
-Untuk mode `mqtt`, tambahkan library client MQTT ke `index.html`:
-```html
-<script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
-```
+Fungsi `MAPPING` (`mapFacility`, `mapMachines`, `mapAlarms`, `mapTrend`, `mapDonut`, `mapHeatmap`, `mapEIR`) memungkinkan struktur JSON dari sistem SCADA/PLC AHM yang berbeda format tetap dapat dipetakan ke SEMS tanpa menyentuh logika dashboard utama — mempercepat fase integrasi pilot.
 
 ---
 
-## 🎛 Kustomisasi
+## 👥 Tim
 
-- **Daftar mesin & zona** — edit array `MACHINES` di `script.js` (id, nama, zona, daya, kapasitas, status)
-- **Tarif listrik & faktor finansial** — edit `TARIF_KWH_INDUSTRI` dan `ESTIMASI_FAKTOR_DENDA` di `script.js`
-- **Rule otomasi RPA** — tambah/ubah objek pada `RPA.RULES` (kondisi `check()` dan aksi `execute()`)
-- **Zona pantau default & preferensi tampilan** — disimpan melalui panel **Akun → Pengaturan**
-- **Branding/logo** — ganti `AHM.jpg` dan referensinya di `index.html`
-- **Tema warna** — variabel CSS (`--bg0`, `--bg1`, dst. serta warna aksen cyan `#00FFD4`) terpusat di awal `style.css`
+> *Lengkapi bagian ini sebelum submisi final.*
 
----
-
-## 🗺 Roadmap
-
-Berdasarkan panel **People Transformation** dalam dashboard, berikut roadmap implementasi yang disimulasikan:
-
-| Fase | Periode | Fokus |
+| Nama | Peran | Kontak |
 |---|---|---|
-| 1 — Foundation | Jan–Feb 2026 | Instalasi dashboard, orientasi & pelatihan IIoT dasar |
-| 2 — Integration | Mar–Apr 2026 | Integrasi sensor Modbus TCP ke mesin utama |
-| 3 — Automation | Mei–Jun 2026 | Aktivasi RPA Engine, sertifikasi ISO 50001 |
-| 4 — Optimization | Jul–Sep 2026 | Ekspansi zona, optimasi prediktif berbasis ML |
-| 5 — Scale-Up | Okt–Des 2026 | Replikasi ke plant lain, target zero-incident |
+| _Nama Anggota 1_ | _Peran (mis. Product Lead / Full-stack Dev)_ | _email/LinkedIn_ |
+| _Nama Anggota 2_ | _Peran_ | _email/LinkedIn_ |
+| _Nama Anggota 3_ | _Peran_ | _email/LinkedIn_ |
+
+**Nama Tim:** _diisi_
+**Track:** Product Track — Astranauts 2026
+**Business Challenge:** PT Astra Honda Motor (AHM)
 
 ---
 
 ## ⚠️ Disclaimer
 
-- Seluruh data numerik (konsumsi energi, status mesin, alarm, dsb.) dalam mode demo **disimulasikan secara acak/statik** untuk keperluan presentasi — bukan data operasional sungguhan.
-- Nama, logo, dan referensi perusahaan digunakan sebagai **studi kasus ilustratif** dan tidak merepresentasikan sistem resmi atau afiliasi dengan entitas terkait.
-- Kredensial login pada bagian [Akun Demo](#-akun-demo) hanya untuk tujuan demonstrasi — jangan gunakan pola autentikasi sisi-klien ini di lingkungan produksi.
+- Seluruh data numerik (konsumsi energi, status mesin, alarm, dsb.) dalam mode demo **disimulasikan** untuk keperluan pembuktian konsep (proof of concept) pada submisi Astranauts 2026 — bukan data operasional aktual dari sistem PT Astra Honda Motor.
+- Logo dan referensi PT Astra Honda Motor digunakan dalam konteks **business challenge resmi Astranauts 2026** sebagai studi kasus, sesuai ketentuan kompetisi.
+- Kredensial pada bagian [Akun Demo](#-akun-demo) hanya untuk tujuan demonstrasi kepada juri/reviewer — bukan pola autentikasi yang direkomendasikan untuk produksi.
 
 ---
 
-<p align="center">Dibangun dengan ⚡ untuk visi pabrik manufaktur yang lebih efisien dan berkelanjutan.</p>
+## 📄 Lisensi
+
+Proyek ini belum menyertakan lisensi resmi. Tambahkan file `LICENSE` (mis. MIT) jika diperlukan sesuai ketentuan hak kekayaan intelektual Astranauts 2026.
+
+---
+
+<p align="center">Disusun untuk <strong>Astranauts 2026 — Product Track</strong> · Business Challenge PT Astra Honda Motor (AHM)<br>⚡ Dari pilot menuju transformasi bisnis yang efisien dan berkelanjutan.</p>
